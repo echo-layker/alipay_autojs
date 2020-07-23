@@ -1,11 +1,19 @@
 var morningTime = "07:18";//自己运动能量生成时间
 var startTime = "07:00";
 var endTime = "7:35";
-var screen_width = 1080;  //设置屏幕的宽度，像素值
-var screen_height = 2340; //设置屏幕的高度，像素值
+// var device.width = device.width;  //设置屏幕的宽度，像素值
+// var device.height = device.height; //设置屏幕的高度，像素值
+var ball_size = "140"; //能量球直径
+var ball_xy = [
+{"x":232,"y":   720},
+{"x":340,"y":	340},
+{"x":470,"y":   616},
+{"x":604,"y":	609},
+{"x":723,"y":	677},
+{"x":850,"y":	740}];
 
 
-unlock();
+// unlock();
 sleep(2000);
 
 threads.start(function(){
@@ -38,8 +46,8 @@ function mainEntrence(){
         enterMyMainPage();
         //进入排行榜
         if(enterRank()){
-        //进入好友主页，收好友能量
-         enterOthers();
+            //进入好友主页，收好友能量
+            enterOthers();
          }
         //结束后返回主页面
         whenComplete();
@@ -98,7 +106,7 @@ function unlock(){
 
 //获取权限和设置参数
 function prepareThings(){
-    setScreenMetrics(screen_width, screen_height);
+    setScreenMetrics(device.width, device.height);
     //toastLog("test1");
     //请求截图
     if(!requestScreenCapture()){
@@ -129,9 +137,9 @@ function getCaptureImg(){
 function enterMyMainPage(){
     //五次尝试蚂蚁森林入
     var i=0;
-    swipe(screen_width*0.5,screen_height*0.5,screen_width*0.5,screen_height*0.25,500);
+    swipe(device.width*0.5,device.height*0.5,device.width*0.5,device.height*0.25,500);
     sleep(500);
-    swipe(screen_width*0.5,screen_height*0.25,screen_width*0.5,screen_height*0.5,500);
+    swipe(device.width*0.5,device.height*0.25,device.width*0.5,device.height*0.5,500);
     while (!textEndsWith("蚂蚁森林").exists() && !descEndsWith("蚂蚁森林").exists() && i<=5){
         sleep(1000);
         i++;   
@@ -140,9 +148,9 @@ function enterMyMainPage(){
         toastLog("没有找到蚂蚁森林入口，尝试中");
         clickByTextDesc("首页",0);
         sleep(2000);
-        swipe(screen_width*0.5,screen_height*0.3,screen_width*0.5,screen_height*0.7,1000);
+        swipe(device.width*0.5,device.height*0.3,device.width*0.5,device.height*0.7,1000);
         sleep(2000);
-        swipe(screen_width*0.5,screen_height*0.3,screen_width*0.5,screen_height*0.7,1000);
+        swipe(device.width*0.5,device.height*0.3,device.width*0.5,device.height*0.7,1000);
         sleep(2000);
     }
     clickByTextDesc("蚂蚁森林",0);
@@ -161,11 +169,7 @@ function enterMyMainPage(){
     }
     
     //收自己能量
-    //clickByTextDesc("克",0);
-    for(var row=screen_height*0.256;row<screen_height*0.376;row+=80)
-        for(var col=screen_width*0.185;col<screen_width*0.815;col+=80){
-            click(col,row);
-            }
+    // collectEnergy();
     toastLog("自己能量收集完成");
     sleep(100);
     return true;
@@ -174,16 +178,17 @@ function enterMyMainPage(){
 //进入排行榜
 function enterRank(){
     toastLog("进入排行榜");
-    sleep(2000);
-    swipe(screen_width*0.5,screen_height*0.8,screen_width*0.5,screen_height*0.1,500);
-    sleep(500);
-    swipe(screen_width*0.5,screen_height*0.8,screen_width*0.5,screen_height*0.1,500);
+    // sleep(2000);
+    // swipe(device.width*0.5,device.height*0.8,device.width*0.5,device.height*0.1,500);
+    // sleep(500);
+    // swipe(device.width*0.5,device.height*0.8,device.width*0.5,device.height*0.1,500);
     toastLog("查看更多好友");
-    sleep(500);
-    clickByTextDesc("查看更多好友",0);
+    // sleep(500);
+    // clickByTextDesc("查看更多好友",0);
+    swipToMoreFriends();
        
     //等待排行榜主页出现
-    sleep(3000);
+    // sleep(3000);
     return true;
 }
 
@@ -196,7 +201,7 @@ function  getHasEnergyfriend(type) {
     if(type==1){
         // 区分倒计时和可收取能量的小手
         p = images.findMultiColors(img, "#ffffff",[[0, -35, "#1da06d"],[0, 23, "#1da06d"]], {
-            region: [1043,200 , 1, screen_height-300]
+            region: [1043,200 , 1, device.height-300]
         });
     }
     if(p!=null){
@@ -220,7 +225,7 @@ function enterOthers(){
         if(myEnergyTime()){
             return false;
         }
-        swipe(screen_width*0.5,screen_height*0.7,screen_width*0.5,screen_height*0.1,500);
+        swipe(device.width*0.5,device.height*0.7,device.width*0.5,device.height*0.1,500);
         sleep(1000);
         ePoint=getHasEnergyfriend(1);
         i++;
@@ -249,11 +254,7 @@ function enterOthers(){
     }
     
     //收能量
-    //clickByTextDesc("克",0);
-    for(var row=screen_height*0.256;row<screen_height*0.376;row+=80)
-        for(var col=screen_width*0.185;col<screen_width*0.815;col+=80){
-            click(col,row);
-            }
+    collectEnergy();
 
     //等待返回好友排行榜
     back();
@@ -399,6 +400,30 @@ function openAlipay(){
         return false;
     }
     return true;
+}
+
+function collectEnergy(){
+    //clickByTextDesc("克",0);
+    // for(var row=device.height*0.270 + 70;row<device.height*0.43125;row+=140)
+    //     for(var col=device.width*0.1296 + 70;col<device.width*0.81735;col+=140){
+    //         toastLog("x:"+col+",y:"+row);
+    //         click(col,row);
+    //         sleep(1000);
+    // }
+   for (var index = 0; index < ball_xy.length; index++) {
+       click(ball_xy[index]['x'],ball_xy[index]['y']);
+       sleep(1000);
+   }
+}
+
+
+//点击查看更多好友
+function swipToMoreFriends() {
+    while (!text("查看更多好友").exists()) {
+        swipe(device.width / 2, device.height * (2 / 3), device.width / 2, device.height / 3, 1000);
+    }
+    text("查看更多好友").findOne().click();
+    sleep(2000);
 }
     
 
